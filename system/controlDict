@@ -1,0 +1,346 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
+|  \\    /   O peration     | Version:  4.0                                   |
+|   \\  /    A nd           | Web:      www.OpenFOAM.org                      |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    object      controlDict;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+application     simpleFoam;
+
+startFrom       latestTime;
+
+startTime       0;
+
+stopAt          endTime;
+
+endTime         3000;	//5000 - 3000 - 1000
+
+deltaT          1;
+
+writeControl    timeStep;
+
+writeInterval   100;
+
+purgeWrite      10;
+
+writeFormat     binary;
+
+writePrecision  12;
+
+writeCompression uncompressed;
+
+timeFormat      general;
+
+timePrecision   6;
+
+runTimeModifiable true;
+
+
+///////////////////////////////////////////////////////////////////////////
+
+functions
+{
+
+///////////////////////////////////////////////////////////////////////////
+
+yplus
+{
+    type                yPlus;
+    functionObjectLibs ("libfieldFunctionObjects.so");
+
+    enabled true;
+
+    writeControl outputTime;
+    //writeControl timeStep;
+    //writeInterval 1;
+
+    //log true;
+}
+
+///////////////////////////////////////////////////////////////////////////
+
+
+///////////////////////////////////////////////////////////////////////////
+
+forcesCoe_ahmed
+{
+    type forceCoeffs;
+    functionObjectLibs ("libforces.so");
+
+    enabled true;
+
+    pName p;
+    Uname U;
+
+    writeControl   timeStep;
+    writeInterval  1;
+
+    patches     (ahmed);
+
+    magUInf     40;
+    lRef        0.288;	//1
+    Aref        0.11503;
+
+    liftDir     (0 0 1);
+    dragDir     (1 0 0);
+    pitchAxis   (0 1 0);
+
+    CofR        (0 0 0);
+
+    rhoInf	1.225;
+    rho	        rhoInf;
+
+    log         yes;
+}
+
+///////////////////////////////////////////////////////////////////////////
+
+
+
+///////////////////////////////////////////////////////////////////////////
+
+Q
+{
+    type                Q;
+    functionObjectLibs  ("libutilityFunctionObjects.so");
+
+    enabled true;
+
+    writeControl outputTime;
+    //writeControl timeStep;
+    //writeInterval 1;
+
+    //log true;
+}
+
+///////////////////////////////////////////////////////////////////////////
+
+
+
+///////////////////////////////////////////////////////////////////////////
+
+wallShearStress1
+{
+    type                wallShearStress;
+    functionObjectLibs  ("libutilityFunctionObjects.so");
+
+    enabled true;
+
+    writeControl outputTime;
+    //writeControl timeStep;
+    //writeInterval 1;
+
+    //log true;
+}
+
+///////////////////////////////////////////////////////////////////////////
+
+
+
+///////////////////////////////////////////////////////////////////////////
+
+minmaxdomain_scalar
+{
+    type            volFieldValue;
+    libs            ("libfieldFunctionObjects.so");
+
+    enabled         true;   //true or false
+    log             true;   //write to screen
+
+    //writeControl    writeTime;
+    writeControl    timeStep;
+    writeInterval   1;
+
+    writeFields     false;  //write solution to field value - Not needed when only reporting value to screen
+
+    writeLocation   true;   //write location in the output file
+
+    //mode component;
+
+    regionType      all;
+
+    operation       none;
+
+    fields
+    (
+        p 
+	k 
+	omega 
+	//epsilon
+	nut 
+    );
+
+}
+
+///////////////////////////////////////////////////////////////////////////
+
+
+
+///////////////////////////////////////////////////////////////////////////
+
+minmaxdomain_vector
+{
+    type            volFieldValue;
+    libs            ("libfieldFunctionObjects.so");
+
+    enabled         true;   //true or false
+    log             true;   //write to screen
+
+    //writeControl    writeTime;
+    writeControl    timeStep;
+    writeInterval   1;
+
+    writeFields     false;  //write solution to field value - Not needed when only reporting value to screen
+
+    writeLocation   true;   //write location in the output file
+
+    //mode component;
+
+    regionType      all;
+
+    operation       none;
+
+    fields
+    (
+        U
+    );
+
+}
+
+///////////////////////////////////////////////////////////////////////////
+
+
+
+///////////////////////////////////////////////////////////////////////////
+
+mindomain_scalar
+{
+    $minmaxdomain_scalar
+    operation       min;
+}
+
+mindomain_vector
+{
+    $minmaxdomain_vector
+    operation       minMag;
+}
+
+maxdomain_scalar
+{
+    $minmaxdomain_scalar
+    operation       max;
+}
+
+maxdomain_vector
+{
+    $minmaxdomain_vector
+    operation       maxMag;
+}
+
+///////////////////////////////////////////////////////////////////////////
+
+
+
+///////////////////////////////////////////////////////////////////////////
+
+fieldAverage
+{
+    type            fieldAverage;
+    functionObjectLibs ("libfieldFunctionObjects.so");
+    enabled         true;
+    writeControl   outputTime;
+
+    //writeControl   timeStep;
+    //writeInterval  100;
+
+    //cleanRestart true;
+
+    timeStart       500;	//200
+    //timeEnd         1000;
+
+    fields
+    (
+        U
+        {
+            mean        on;
+            prime2Mean  on;
+            base        time;
+        }
+
+        p
+        {
+            mean        on;
+            prime2Mean  on;
+            base        time;
+        }
+
+        nut
+        {
+            mean        on;
+            prime2Mean  on;
+            base        time;
+        }
+
+        k
+        {
+            mean        on;
+            prime2Mean  off;
+            base        time;
+        }
+
+        omega
+        {
+            mean        on;
+            prime2Mean  off;
+            base        time;
+        }
+
+        epsilon
+        {
+            mean        off;
+            prime2Mean  off;
+            base        time;
+        }
+
+        Q
+        {
+            mean        on;
+            prime2Mean  off;
+            base        time;
+        }
+
+        yPlus
+        {
+            mean        on;
+            prime2Mean  off;
+            base        time;
+        }
+
+        wallShearStress
+        {
+            mean        on;
+            prime2Mean  off;
+            base        time;
+        }
+
+    );
+
+}
+
+///////////////////////////////////////////////////////////////////////////
+
+
+
+}
+
+
+// ************************************************************************* //

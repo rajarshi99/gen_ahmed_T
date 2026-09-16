@@ -1,0 +1,142 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
+|  \\    /   O peration     | Version:  4.0                                   |
+|   \\  /    A nd           | Web:      www.OpenFOAM.org                      |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    object      fvSolution;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+solvers
+{
+    p
+    {
+/*
+        solver          GAMG;
+        tolerance       1e-06;
+        relTol          0.01;
+        smoother        GaussSeidel;
+        nPreSweeps      0;
+        nPostSweeps     2;
+        nFinestSweeps   2;
+        cacheAgglomeration false;
+        nCellsInCoarsestLevel 10;
+        agglomerator    faceAreaPair;
+        mergeLevels     1;
+*/
+
+
+        solver          PCG;
+        preconditioner
+        {
+            preconditioner  GAMG;
+            tolerance       1e-08;	//1e-06 1e-08
+            relTol          0.0;	//0.01 0
+            nVcycles        2;
+            smoother        GaussSeidel;
+            nPreSweeps      0;
+            nPostSweeps     2;
+            nFinestSweeps   2;
+            cacheAgglomeration false;
+            nCellsInCoarsestLevel 10;
+            agglomerator    faceAreaPair;
+            mergeLevels     1;
+        }
+
+        tolerance       1e-06;
+        relTol          0.01;
+        //maxIter         20;
+
+
+/*
+        solver          PCG;
+        preconditioner  DIC;
+        tolerance       1e-6;
+        relTol          0.01;
+*/
+
+        minIter 3;
+    }
+
+    Phi
+    {
+        $p;
+    }
+
+    U
+    {
+/*
+        type            coupled;  // optional, defaults to segregated
+        solver          PBiCCCG;
+        preconditioner  DILU;
+        tolerance       (1e-08 1e-08 1e-08);
+        relTol          (0.001 0.001 0.001);
+*/
+
+        solver          PBiCGStab;
+        preconditioner  DILU;
+        tolerance       1e-08;
+        relTol          0.001;
+        minIter 3;
+    }
+
+    "(k|omega|epsilon)"
+    {
+        solver          PBiCGStab;
+        preconditioner  DILU;
+        tolerance       1e-08;
+        relTol          0.001;
+        minIter 3;
+    }
+
+}
+
+SIMPLE
+{
+    nNonOrthogonalCorrectors 2;
+    consistent yes;
+
+    residualControl
+    {
+        p               	1e-4;
+        U               	1e-4;
+        "(k|epsilon|omega)" 	1e-4;
+    }
+
+}
+
+potentialFlow
+{
+    nNonOrthogonalCorrectors 10;
+}
+
+relaxationFactors
+{
+    equations
+    {
+	//p		0.9;
+    	".*"  0.7;
+    }
+    equations
+    {
+    	".*"  0.7;
+	//p		0.9;	//reducing to 0.7 from 0.9 gets better cd
+        //U               0.9;
+        //k               0.9;
+        //omega           0.9;
+    }
+}
+
+cache
+{
+    grad(U);
+}
+
+// ************************************************************************* //

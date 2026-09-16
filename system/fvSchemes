@@ -1,0 +1,86 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
+|  \\    /   O peration     | Version:  4.0                                   |
+|   \\  /    A nd           | Web:      www.OpenFOAM.org                      |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    object      fvSchemes;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+ddtSchemes
+{
+    default         steadyState;
+}
+
+gradSchemes
+{
+    //default         Gauss linear;					
+    //default       cellMDLimited Gauss linear 0.5;
+    //default         faceMDLimited Gauss linear 0.5;
+
+    //default 	    leastSquares;
+
+    default 	    cellLimited leastSquares 1;
+
+    //grad(omega)     cellLimited leastSquares 1;			
+    //grad(k)         cellLimited leastSquares 1;			
+
+    //grad(U)       cellLimited leastSquares 1;
+
+    grad(p)       cellLimited leastSquares 0.5;
+
+    //grad(U)	    cellLimited<cubic> 1.5 leastSquares 1;
+    //default 	    cellLimited<cubic> 1.5 Gauss linear 0.333;
+}
+
+divSchemes
+{
+    default         none;
+    //div(phi,U)      bounded Gauss limitedLinearV 1;
+    //div(phi,U)      bounded Gauss linearUpwindV grad(U);		//D
+    div(phi,U)      bounded Gauss linearUpwind grad(U);	
+    //div(phi,U)      bounded Gauss LUST default;
+
+    turb_scheme upwind;
+    //turb_scheme limitedLinear 1;
+    //turb_scheme linearUpwind default;
+
+    div(phi,k)      bounded Gauss $turb_scheme;
+    div(phi,omega)  bounded Gauss $turb_scheme;
+    div(phi,epsilon)  bounded Gauss $turb_scheme;
+
+//For potentialFoam
+    div(div(phi,U)) Gauss linear;
+
+    div((nuEff*dev2(T(grad(U))))) Gauss linear;
+}
+
+laplacianSchemes
+{
+    default         Gauss linear limited 1;
+}
+
+interpolationSchemes
+{
+    default         linear;
+}
+
+snGradSchemes
+{
+    default         limited 1;
+}
+
+wallDist
+{
+    method meshWave;
+}
+
+
+// ************************************************************************* //
