@@ -3,22 +3,30 @@
 Thanks to [wolf dynamics](https://www.wolfdynamics.com/tutorials.html?id=146)
 we can simulate using the following simple steps.
 
-'''bash
+```bash
+cd steady
 sh run_solver.sh
 reconstructPar
-'''
+```
+
+Then we copy the steady state solution to see how it evolves with time
+```bash
+cp -r 0 ../trans
+cd ../trans
+pimpleFoam | tee log.pimpleFoam
+```
 
 ### How to set the env?
 
-'''bash
+````bash
 docker run -it -v $HOME/openfoam_tut:/home/openfoam/work openfoam/openfoam9-paraview56
-'''
+````
 
 ### How to install the docker?
 
-'''bash
+````bash
 docker search openfoam
 docker pull # whatever looks like openfoam9
-'''
+````
 
 
